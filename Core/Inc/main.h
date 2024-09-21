@@ -61,6 +61,8 @@ void Error_Handler(void);
 #define DC_GPIO_Port GPIOA
 #define RST_Pin GPIO_PIN_3
 #define RST_GPIO_Port GPIOA
+#define Key_1_Pin GPIO_PIN_10
+#define Key_1_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

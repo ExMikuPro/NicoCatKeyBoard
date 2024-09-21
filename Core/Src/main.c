@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "spi.h"
+#include "tim.h"
 #include "usb_device.h"
 #include "gpio.h"
 
@@ -39,7 +40,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+int count = 0;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -50,13 +51,74 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+
 /* USER CODE BEGIN PFP */
+
+void getDeCodeValue_1(TIM_HandleTypeDef *htim) {
+  count = __HAL_TIM_GET_COUNTER(&htim1) / 2;
+
+  if (count > 100)count = 100;
+  if (count < 0)count = 0;
+}
+
+void guiCommand(u8g2_t u8g2, int x, int y) {
+  u8g2_DrawRFrame(&u8g2, x, y, 40, 40, 5);
+  u8g2_DrawCircle(&u8g2, x + 10, y + 10, 5, U8G2_DRAW_LOWER_LEFT | U8G2_DRAW_UPPER_LEFT | U8G2_DRAW_UPPER_RIGHT);
+  u8g2_DrawCircle(&u8g2, x + 29, y + 10, 5, U8G2_DRAW_LOWER_RIGHT | U8G2_DRAW_UPPER_LEFT | U8G2_DRAW_UPPER_RIGHT);
+  u8g2_DrawCircle(&u8g2, x + 10, y + 30, 5, U8G2_DRAW_LOWER_RIGHT | U8G2_DRAW_LOWER_LEFT | U8G2_DRAW_UPPER_LEFT);
+  u8g2_DrawCircle(&u8g2, x + 29, y + 30, 5, U8G2_DRAW_LOWER_RIGHT | U8G2_DRAW_UPPER_RIGHT | U8G2_DRAW_LOWER_LEFT);
+  u8g2_DrawHLine(&u8g2, x + 10, y + 15, 20);
+  u8g2_DrawHLine(&u8g2, x + 10, y + 25, 20);
+  u8g2_DrawVLine(&u8g2, x + 15, y + 11, 20);
+  u8g2_DrawVLine(&u8g2, x + 24, y + 11, 20);
+}
+
+void guiShift(u8g2_t u8g2, int x, int y) {
+  u8g2_DrawRFrame(&u8g2, x, y, 40, 40, 5);
+  u8g2_DrawVLine(&u8g2, x + 25, y + 20, 10);
+  u8g2_DrawVLine(&u8g2, x + 15, y + 20, 10);
+  u8g2_DrawHLine(&u8g2, x + 15, y + 30, 11);
+  u8g2_DrawHLine(&u8g2, x + 8, y + 20, 7);
+  u8g2_DrawHLine(&u8g2, x + 26, y + 20, 7);
+  u8g2_DrawLine(&u8g2, x + 8, y + 20, x + 20, y + 8);
+  u8g2_DrawLine(&u8g2, x + 20, y + 8, x + 32, y + 20);
+}
+
+void guiEnter(u8g2_t u8g2, int x, int y) {
+  u8g2_DrawRFrame(&u8g2, x, y, 40, 40, 5);
+  u8g2_DrawHLine(&u8g2, x + 11, y + 24, 15);
+  u8g2_DrawHLine(&u8g2, x + 16, y + 14, 7);
+  u8g2_DrawCircle(&u8g2, x + 23, y + 19, 5, U8G2_DRAW_UPPER_RIGHT);
+  u8g2_DrawCircle(&u8g2, x + 23, y + 19, 5, U8G2_DRAW_LOWER_RIGHT);
+  u8g2_DrawLine(&u8g2, x + 11, y + 24, x + 14, y + 27);
+  u8g2_DrawLine(&u8g2, x + 11, y + 24, x + 14, y + 21);
+}
+
+void guiControl(u8g2_t u8g2, int x, int y) {
+  u8g2_DrawRFrame(&u8g2, x, y, 40, 40, 5);
+  u8g2_DrawLine(&u8g2, x + 8, y + 25, x + 20, y + 13);
+  u8g2_DrawLine(&u8g2, x + 20, y + 13, x + 32, y + 25);
+}
+
+void guiOption(u8g2_t u8g2, int x, int y) {
+  u8g2_DrawRFrame(&u8g2, x, y, 40, 40, 5);
+  u8g2_DrawHLine(&u8g2, x + 7, y + 10, 7);
+  u8g2_DrawHLine(&u8g2, x + 24, y + 10, 7);
+  u8g2_DrawLine(&u8g2, x + 14, y + 12, x + 25, y + 29);
+  u8g2_DrawHLine(&u8g2, x + 26, y + 29, 7);
+}
+
+void guiFont(u8g2_t u8g2, int x, int y, const char *str) {
+  u8g2_DrawRFrame(&u8g2, x, y, 40, 40, 5);
+  u8g2_DrawStr(&u8g2, x + 15, y + 26, str);
+}
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 static u8g2_t u8g2;
+
 /* USER CODE END 0 */
 
 /**
@@ -88,17 +150,30 @@ int main(void) {
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
   MX_SPI1_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-  u8g2Init(&u8g2);
 
-  u8g2_DrawBox(&u8g2, 0, 0, 127, 127);
-  u8g2_SendBuffer(&u8g2);
+  HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
+  u8g2Init(&u8g2);
+  u8g2_SetFont(&u8g2, u8g2_font_10x20_me);
+  // u8g2_DrawBox(&u8g2, 0, 0, 127, 127);
+
+  u8g2_SetFont(&u8g2, u8g2_font_10x20_me);
+
+
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
+    getDeCodeValue_1(&htim1);
+    u8g2_ClearBuffer(&u8g2);
+    int x = 0;
+    int y = 0;
+
+    u8g2_SendBuffer(&u8g2);
+    // HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -126,10 +201,10 @@ void SystemClock_Config(void) {
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 15;
+  RCC_OscInitStruct.PLL.PLLM = 25;
   RCC_OscInitStruct.PLL.PLLN = 144;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
-  RCC_OscInitStruct.PLL.PLLQ = 5;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 3;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
     Error_Handler();
   }
@@ -143,7 +218,7 @@ void SystemClock_Config(void) {
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) {
     Error_Handler();
   }
 }
