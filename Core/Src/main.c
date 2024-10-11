@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "u8g2/u8g2.h"
+#include "ws2812/ws2812.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,6 +43,28 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 int count = 0;
+
+
+tWs2812bCache_TypeDef DateRGB[WS2812B_AMOUNT] = {
+
+//R    G      B
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+    0X00, 0X00, 0X00,
+};
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -153,9 +176,14 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM1_Init();
   MX_USART1_UART_Init();
+  MX_TIM3_Init();
+  MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
+
+  // WS2812B_Task();
+
   u8g2Init(&u8g2);
   u8g2_SetFont(&u8g2, u8g2_font_10x20_me);
   // u8g2_DrawBox(&u8g2, 0, 0, 127, 127);
@@ -173,6 +201,15 @@ int main(void)
     u8g2_ClearBuffer(&u8g2);
     int x = 0;
     int y = 0;
+
+    if (HAL_GPIO_ReadPin(A1_GPIO_Port, A1_Pin) == GPIO_PIN_RESET) {
+      WS2812B_Task();
+      WS2812b_Set(1, 0xFF, 0x00, 0xFF);
+    } else {
+
+    }
+
+//    u8g2_DrawPixel();
 
     u8g2_SendBuffer(&u8g2);
     // HAL_Delay(500);
@@ -204,8 +241,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 25;
-  RCC_OscInitStruct.PLL.PLLN = 144;
+  RCC_OscInitStruct.PLL.PLLM = 12;
+  RCC_OscInitStruct.PLL.PLLN = 72;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 3;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
