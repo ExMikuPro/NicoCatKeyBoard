@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
+#include "mbedtls.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -44,27 +46,6 @@
 /* USER CODE BEGIN PM */
 int count = 0;
 
-
-tWs2812bCache_TypeDef DateRGB[WS2812B_AMOUNT] = {
-
-//R    G      B
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-    0X00, 0X00, 0X00,
-};
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -75,6 +56,7 @@ tWs2812bCache_TypeDef DateRGB[WS2812B_AMOUNT] = {
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 void getDeCodeValue_1(TIM_HandleTypeDef *htim) {
@@ -140,7 +122,7 @@ void guiFont(u8g2_t u8g2, int x, int y, const char *str) {
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-static u8g2_t u8g2;
+
 
 /* USER CODE END 0 */
 
@@ -172,46 +154,42 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USB_DEVICE_Init();
   MX_SPI1_Init();
   MX_TIM1_Init();
   MX_USART1_UART_Init();
   MX_TIM3_Init();
   MX_SPI2_Init();
+  MX_MBEDTLS_Init();
+  /* Call PreOsInit function */
+  MX_MBEDTLS_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
 
   // WS2812B_Task();
 
-  u8g2Init(&u8g2);
-  u8g2_SetFont(&u8g2, u8g2_font_10x20_me);
-  // u8g2_DrawBox(&u8g2, 0, 0, 127, 127);
-
-  u8g2_SetFont(&u8g2, u8g2_font_10x20_me);
-
 
 
   /* USER CODE END 2 */
 
+  /* Call init function for freertos objects (in freertos.c) */
+  MX_FREERTOS_Init();
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    getDeCodeValue_1(&htim1);
-    u8g2_ClearBuffer(&u8g2);
+//    getDeCodeValue_1(&htim1);
+//    u8g2_ClearBuffer(&u8g2);
     int x = 0;
     int y = 0;
 
-    if (HAL_GPIO_ReadPin(A1_GPIO_Port, A1_Pin) == GPIO_PIN_RESET) {
-      WS2812B_Task();
-      WS2812b_Set(1, 0xFF, 0x00, 0xFF);
-    } else {
-
-    }
-
 //    u8g2_DrawPixel();
 
-    u8g2_SendBuffer(&u8g2);
+//    u8g2_SendBuffer(&u8g2);
     // HAL_Delay(500);
     /* USER CODE END WHILE */
 
@@ -256,7 +234,7 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)

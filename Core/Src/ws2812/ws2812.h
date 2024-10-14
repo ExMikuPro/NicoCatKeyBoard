@@ -29,7 +29,9 @@ void WS2812b_Set(uint16_t Ws2b812b_NUM, uint8_t r, uint8_t g, uint8_t b);
 
 void WS2812B_Task(void);
 
-void WS2812B_User_Task(tWs2812bCache_TypeDef *date);
+void WS2812B_User_Task(uint16_t Ws2b812b_NUM, uint8_t r, uint8_t g, uint8_t b);
+
+void WS2812_Send_Data();
 
 
 #endif

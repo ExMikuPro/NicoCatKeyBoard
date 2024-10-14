@@ -214,7 +214,7 @@ void u8g2Init(u8g2_t *u8g2)
 {
 
 //    u8g2_Setup_ssd1306_i2c_128x64_noname_f(u8g2, U8G2_R0, u8x8_byte_hw_i2c, u8g2_gpio_and_delay_stm32);  // 初始化 u8g2 结构体
-  u8g2_Setup_ssd1327_ws_128x128_f(u8g2, U8G2_R1, u8x8_byte_4wire_hw_spi, u8x8_stm32_gpio_and_delay);
+  u8g2_Setup_ssd1327_ws_128x128_f(u8g2, U8G2_R3, u8x8_byte_4wire_hw_spi, u8x8_stm32_gpio_and_delay);
   u8g2_InitDisplay(u8g2); // 根据所选的芯片进行初始化工作，初始化完成后，显示器处于关闭状态
   u8g2_SetPowerSave(u8g2, 0); // 打开显示器
   u8g2_ClearBuffer(u8g2);
